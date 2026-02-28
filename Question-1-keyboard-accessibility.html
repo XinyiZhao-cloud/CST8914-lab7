@@ -24,9 +24,17 @@ body {
 a{
   color: #006b3a;
 }
-main a{
+/* main a{
   outline: none;
+}  Fix 1 not visible focus indicator */
+/* Add focus style */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 5px solid #006b3a;
+  outline-offset: 3px;
 }
+
 h2 {
   margin-top: 0;
 }
@@ -206,7 +214,9 @@ article p {
       <nav class="menu">
         <a href="#">Home</a>
         <a href="#">Politics</a>
-        <a href="#" tabindex="-1">Business</a>
+        <!-- <a href="#" tabindex="-1">Business</a> -->
+        <!-- Fix 2 tab order: remove tabindex="-1" because user cannot reaching the Business Link -->
+        <a href="#">Business</a>
         <a href="#">Entertainment</a>
         <a href="#">Sports</a>
         <a href="#" class="btn-search pull-right"><img src="https://raw.githubusercontent.com/udacity/ud891/2de2a0688c68809a3b453db3a24b1a59e8401459/lesson2-focus/02-dom-order/images/search.svg" alt="Search" />Search</a> 
@@ -214,14 +224,6 @@ article p {
       </nav>
     </div>
   </header>
-  <div class="newsletter">
-    <div class="container">
-      <h3>Like the Funion? Consider joining our newsletter!</h3>
-      <input type="text">
-      <button type="button" onfocus="getFocus()">Sign up</button></div>
-      
-    </div>
-  </div>
   <main class="container">
     <h2 class="offscreen">Top story</h2>
     <article class="main-story">
@@ -239,11 +241,15 @@ article p {
     <div class="side-by-side">
       <div class="column">
         <div class="tier-header">
-          <h2 tabindex="0">In the news</h2>
+          <!-- Fix 4 Unnecessary tabbox - Remove tabindex from heading to avoid unnecessary tab stop -->
+          <!-- <h2 tabindex="0">In the news</h2> -->
+          <h2>In the news</h2>
         </div>
         <article>
           <h3 class="headline">Bee wonders if maybe everyone else is a drone and he's the only one who has it "figured out."</h3>
-          <p><a href="#" tabindex="1"><b>Read More</b></a></p>
+          <!-- <p><a href="#" tabindex="1"><b>Read More</b></a></p> -->
+           <!-- Fix 2 tab order: remove tabindex="1", allow tab follow logical intuitive focus order-->
+            <p><a href="#"><b>Read More</b></a></p>
           <img src="https://github.com/udacity/ud891/blob/gh-pages/lesson2-focus/02-dom-order/images/bee.jpg?raw=true" alt="A bee on top of a flower" />
         </article>
       </div>
@@ -287,10 +293,21 @@ article p {
     
   </main>
   <!--   stuff can be added here :)
+     
   <footer>
   </footer>
   -->
-  
+  <!-- Fix logic issue: the tab jump from Navigation bar to signup then back to Main -->
+   <!-- Move newsletter after Main solved this issue -->
+    <div class="newsletter">
+      <div class="container">
+        <h3>Like the Funion? Consider joining our newsletter!</h3>
+        <input type="text">
+        <!-- Fix 3 Trigger issue: change onfocus to onclick, becuase onfocus is not trigger action -->
+        <!-- <button type="button" onfocus="getFocus()">Sign up</button></div> -->
+        <button type="button" onclick="getFocus()">Sign up</button>
+      </div>
+    </div>
   <script>
     function getFocus() {
       window.open('https://aidaform.com/templates/thank-you-page-with-redirects.html','mywindow').focus()
