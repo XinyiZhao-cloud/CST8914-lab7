@@ -27,25 +27,30 @@
     </head>
     <body>
         <h1>Feedback form</h1>
+        <!-- Fix: Error Summary region for accessible notification and focus management -->
+        <div role="region" aria-labelledby="errorTitle" id="error-summary" tabindex="-1" hidden>
+          <h2 id="errorTitle">Please fix the following errors:</h2>
+          <ul id="errorList"></ul>
+          </div>
     <form>
         <div class="control">
-          <label>Full name <span class="required">*</span></label><input id="name" name="name" type="text" />
+          <label for="name">Full name <span class="required">*</span></label><input id="name" name="name" type="text" />
         </div>
         <div class="control">
           <label>Biography</label><textarea id="biography" name="biography" type="text"></textarea>
           <span>Include examples on your skills in JavaScript.</span>
         </div>
         
-          <div>Gender</div>
+          <div id="genderGroup" tabindex="-1">Gender</div>
           <div class="control">
-            <input id="gender_male" name="gender" type="radio" value="male" /><label>Male</label>
+            <input id="gender_male" name="gender" type="radio" value="male" /><label for="gender_male">Male</label>
           </div>
           <div class="control">
-            <input id="gender_female" name="gender" type="radio" value="female" /><label>Female</label>
+            <input id="gender_female" name="gender" type="radio" value="female" /><label for="gender_female">Female</label>
           </div>
         
         <div class="control">
-          <input id="accept_agbs" name="accept_agbs" type="checkbox" value="1" /><label>I accept the terms and conditions</label>
+          <input id="accept_agbs" name="accept_agbs" type="checkbox" value="1" /><label for="accept_agbs">I accept the terms and conditions</label>
         </div>
         <div class="control">
           <input name="validate" type="hidden" value="1" /><input type="submit" value="Register" />
@@ -58,7 +63,8 @@
       ;
       (function () {
         var validateInput;
-      
+        var hasErrors = false;
+
         $.urlParam = function (name) {
           var results;
           results = new RegExp('[?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -73,16 +79,18 @@
         validateInput = function validateInput(input, message) {
           var $elementToDescribe, $error, $errorContainer, $fieldset, $input, $referencedElement, value;
           $input = $('[name="' + input + '"]');
-      
           if ((value = $.urlParam(input)) === null) {
-            if ($('fieldset.errors').length === 0) {
-              $('form').prepend('<fieldset class="errors"><legend>Errors</legend><ul></ul></fieldset>');
-            }
-      
-            $referencedElement = null;
-            $elementToDescribe = null;
-            $errorContainer = $('fieldset.errors ul');
-      
+            // if ($('fieldset.errors').length === 0) {
+            //   $('form').prepend('<fieldset class="errors"><legend>Errors</legend><ul></ul></fieldset>');
+            // }  
+            // $referencedElement = null;
+            // $elementToDescribe = null;
+            // $errorContainer = $('fieldset.errors ul');   
+            // $errorContainer.empty(); 
+            // Fix: Reset error summary content once submit form in document.ready function      
+            $errorContainer = $('#errorList');
+            // Fix: when an error occurs, set hasErrors to true, to determine show error summary or not
+            hasErrors = true;
             if ($input.is(':radio')) {
               $fieldset = $input.closest('fieldset');
               $elementToDescribe = $fieldset;
@@ -92,15 +100,21 @@
               $referencedElement = $input;
             }
       // R.G. hint: fix next line ;)
-            $error = $('<a>' + message + '</a>');
-            $error.click(function (e) {
+            // Fix: make each error link to field and trigger focuse on the field 
+            // $error = $('<a>' + message + '</a>');
+            var targetId = $referencedElement.attr('id');
+            if ($input.is(':radio')) targetId = 'genderGroup'; // link to group label
+            $error = $('<a href="#' + targetId + '">' + message + '</a>');       
               // If we rely on the link's href pointing to the input's ID, it doesn't trigger forms mode in screen readers
-              $referencedElement.focus();
-              return e.preventDefault();
-            });
-            $elementToDescribe.attr('aria-describedby', input + '_description');
-            $errorContainer.append('<li>').find('li:last').append($error);
-      
+             // FIX: Clicking an error link moves focus to the same target as the href
+              $error.click(function (e) {
+                $('#' + targetId).focus();
+                return e.preventDefault();
+              });
+            // $elementToDescribe.attr('aria-describedby', input + '_description');
+            // $errorContainer.append('<li>').find('li:last').append($error);
+            // Fix: append error to error summary region
+            $errorContainer.append($('<li></li>').append($error));
             if ($(':not(form):focus').length === 0) {
               // See https://stackoverflow.com/questions/46134247/jquery-setting-focus-doesnt-work-in-ie11/
             
@@ -120,14 +134,26 @@
       
         $(document).ready(function () {
           if ($.urlParam('validate')) {
+            // Fix: Reset error summary content once submit form  
+            hasErrors = false;
+            $('#errorList').empty();
+            $('#error-summary').prop('hidden', true);
+            
             validateInput('name', 'Please enter your name!');
             validateInput('biography', 'Please tell us something about your history!');
             validateInput('gender', 'Please tell us your gender!');
             validateInput('accept_agbs', 'You must accept our terms and conditions!');
       
-            if ($('.error').length === 0) {
-              return alert('All inputs are valid.');
-            }
+            // if ($('.error').length === 0) {
+            //   return alert('All inputs are valid.');
+            // } 
+              if (!hasErrors) {
+                $('#error-summary').prop('hidden', true);
+                return alert('All inputs are valid.');
+              }
+            // Fix: Move focus to the error notification region. 
+            $('#error-summary').prop('hidden', false);
+           document.getElementById('error-summary').focus();
           }
         });
       }).call(void 0);</script>
